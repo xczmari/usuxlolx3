@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>for you</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Quicksand", sans-serif;
+  background: linear-gradient(to bottom, #e9c3c9, #f4eaea, #ffffff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#cuteCountdown {
+  font-size: 0.9em;
+  color: #c97c8c;
+  background: rgba(255,255,255,0.7);
+  padding: 6px 14px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.letter {
+  width: 340px;
+  padding: 30px;
+  background: white;
+  border-radius: 25px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.back-img {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 55px;
+  cursor: pointer;
+}
+
+.main-gif {
+  width: 150px;
+  display: block;
+  margin: auto;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  background: #e9aeb6;
+  color: white;
+  cursor: pointer;
+}
+
+.choices {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.choices img {
+  width: 80px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.choices img:hover {
+  transform: scale(1.15);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  gap: 12px;
+  justify-content: center;
+}
+
+.card {
+  width: 80px;
+  height: 80px;
+  perspective: 600px;
+  cursor: pointer;
+}
+
+.inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.flipped .inner {
+  transform: rotateY(180deg);
+}
+
+.front, .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  backface-visibility: hidden;
+}
+
+.front {
+  background: #f4c2c2;
+}
+
+.back {
+  background: white;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back img {
+  width: 55px;
+}
+
+/* LOVE BOXES */
+.love-box {
+  margin:10px 0;
+  padding:12px;
+  border-radius:15px;
+  background:white; /* default white */
+  cursor:pointer;
+  text-align:left;
+  transition:0.3s;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.love-box.open {
+  background:#f4c2c2; /* pink when clicked */
+}
+
+.love-text {
+  display:none;
+  margin-top:5px;
+  font-size:0.9em;
+}
+
+.love-box.open .love-text {
+  display:block;
+}
+
+.heart {
+  width:20px;
+  margin-top:2px;
+}
+/* birthday text */
+.bday-text {
+  text-align: left;
+  font-size: 0.95em;
+  line-height: 1.6;
+  margin-top: 15px;
+}
+@keyframes heartBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.3); }
+  50%  { transform: scale(0.9); }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.heart.bounce {
+  animation: heartBounce 0.4s ease;
+}
+.bday-img {
+  position: absolute;
+  bottom: -60px;   /* pushes it outside */
+  left: -40px;     /* pushes it outside */
+  width: 120px;    /* size (change this!) */
+}
+#text {
+  white-space: pre-line;
+  text-align: left;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="cuteCountdown"></div>
+<div id="content"></div>
+
+<script>
+let ready = false;
+let gameDone = false;
+let loveDone = false;
+
+const openTime = new Date("April 6, 2026 00:00:00").getTime();
+function closeNoPeek(){
+  document.getElementById("noPeekPopup")?.remove();
+}
+/* COUNTDOWN */
+setInterval(() => {
+  const now = Date.now();
+  const diff = openTime - now;
+  const el = document.getElementById("cuteCountdown");
+
+  if (diff <= 0) {
+    ready = true;
+    el.innerText = "it's time ♡";
+
+    const btn = document.getElementById("mainBtn");
+    if (btn) btn.innerText = "IT'SSS TIMEEEEEE!";
+
+    const text = document.getElementById("waitText");
+    if (text) text.innerText = "okay fine… you can open it now ♡";
+
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  el.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}, 1000);
+
+/* MAIN */
+function loadMain(){
+  document.getElementById("content").innerHTML = `
+    <div class="letter">
+      <img class="main-gif" src="https://media.tenor.com/ZxBDiwlgUKUAAAAj/cat.gif">
+
+      <h2>you've got a message</h2>
+      <p id="waitText">but you're gonna have to waiiitt..</p>
+
+      <button id="mainBtn" onclick="handleClick()">
+        noo i cant wait
+      </button>
+    </div>
+  `;
+}
+loadMain();
+
+/* CLICK */
+function handleClick(){
+  if(!ready) showWait();
+  else showOptions();
+}
+
+/* WAIT */
+function showWait(){
+  document.getElementById("content").innerHTML = `
+    <div class="letter">
+      <img class="back-img" src="back.png" onclick="loadMain()">
+
+      <img id="cryGif" src="cry1.png"
+      style="width:220px;margin:auto;display:block;">
+
+      <h2>awww sorrryy</h2>
+      <p>i promise it’ll be worth it, my love <3</p>
+    </div>
+  `;
+
+  let i=0;
+  const imgs=["cry1.png","cry2.png"];
+
+  setInterval(()=>{
+    i=(i+1)%2;
+    document.getElementById("cryGif").src=imgs[i];
+  },500);
+}
+
+/* OPTIONS */
+function showOptions(){
+  document.getElementById("cuteCountdown").style.display="none";
+
+  document.getElementById("content").innerHTML = `
+    <div class="letter">
+      <img class="back-img" src="back.png" onclick="loadMain()">
+
+      <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExam1oMGVuankydjgzNDVoMXh0azY3cTQ1ejZ0eDM0MjJ5eGVkNHl1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/I6C7l0QcJTYWGfC5pC/giphy.gif"
+style="width:130px; margin:10px auto; display:block;">
+
+<h2>choose one</h2>
+
+<div class="choices">
+        <img src="game.png" onclick="miniGame()">
+        <img src="love.png" onclick="loveList()">
+        <img src="letter.png" onclick="birthday()">
+      </div>
+    </div>
+  `;
+}
+
+/* LOVE LIST */
+function loveList(){
+  loveDone=true;
+
+  document.getElementById("content").innerHTML=`
+    <div class="letter">
+      <img class="back-img" src="back.png" onclick="showOptions()">
+
+      <h2>reasons why i love you ♡</h2>
+      <p>tap each one to reveal</p>
+
+      <div class="love-container">
+        ${loveItem("your patience","you never give up on me, even when things get tough, im glad you're still amazing after everything that's been happening between us")}
+        ${loveItem("your tenderness","you make me feel loved and valid eveeenn when im upset over stupid stuff")}
+        ${loveItem("your laugh","your laugh makes me laugh LMAOO")}
+        ${loveItem("your heart","you care so deeply abt me m3 enk nooty")}
+        ${loveItem("your beauty","you're beautiful inside and out (and ar3etak)")}
+        ${loveItem("your aura","too much aura for me to handle ong fr fr")}
+        ${loveItem("our future","i love planning everything WITH YOU esp. future stuff")}
+        ${loveItem("alot of other stuff","words cant describe how amazing you are (idk how to expand it futher im sorry)   ♡")}
+      </div>
+    </div>
+  `;
+}
+
+function loveItem(t, txt){
+  return `
+    <div class="love-box" onclick="toggleLove(this)">
+      
+      <img src="heartwhite.png" class="heart">
+
+      <div>
+        <b>${t}</b>
+        <div class="love-text">${txt}</div>
+      </div>
+
+    </div>
+  `;
+}
+function toggleLove(el){
+  el.classList.toggle("open");
+
+  const heart = el.querySelector(".heart");
+
+  if(el.classList.contains("open")){
+    heart.src = "heartpink.png";
+  } else {
+    heart.src = "heartwhite.png";
+  }
+}
+/* MINI GAME */
+function miniGame(){
+  let cards=["flower.png","flower.png","strawberry.png","strawberry.png","boba.png","boba.png"];
+  cards.sort(()=>0.5-Math.random());
+
+  let first=null, second=null, lock=false, matches=0;
+
+  document.getElementById("content").innerHTML=`
+    <div class="letter">
+      <img class="back-img" src="back.png" onclick="showOptions()">
+      <h2 style="font-size:15px; margin-top:30px;">
+  lets play a lil game before your surprise ♡
+</h2>
+      <div class="grid" id="grid"></div>
+    </div>
+  `;
+
+  const grid=document.getElementById("grid");
+
+  cards.forEach(src=>{
+    const card=document.createElement("div");
+    card.className="card";
+
+    card.innerHTML=`
+      <div class="inner">
+        <div class="front"></div>
+        <div class="back"><img src="${src}"></div>
+      </div>
+    `;
+
+    card.onclick=()=>{
+      if(lock || card.classList.contains("flipped")) return;
+
+      card.classList.add("flipped");
+
+      if(!first){
+        first={card,src};
+        return;
+      }
+
+      second={card,src};
+      lock=true;
+
+      if(first.src===second.src){
+        matches++;
+        first=null;
+        second=null;
+        lock=false;
+
+        if(matches===3){
+          gameDone=true;
+          confetti({colors:["#ffc0cb","#ffffff"]});
+
+          document.body.insertAdjacentHTML("beforeend",`
+            <div id="popup" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);display:flex;justify-content:center;align-items:center;z-index:999;">
+              <div style="background:white;padding:25px;border-radius:20px;text-align:center;width:260px;">
+                <img src="https://media.giphy.com/media/VFUJLSxV2kfqfP44IE/giphy.gif" style="width:120px;">
+                <h3>good job babyyy ♡</h3>
+                <button onclick="closePopup()">continue</button>
+              </div>
+            </div>
+          `);
+        }
+
+      } else {
+        setTimeout(()=>{
+          first.card.classList.remove("flipped");
+          second.card.classList.remove("flipped");
+          first=null;
+          second=null;
+          lock=false;
+        },700);
+      }
+    };
+
+    grid.appendChild(card);
+  });
+}
+
+function closePopup(){
+  document.getElementById("popup")?.remove();
+}
+
+/* LETTER */
+function birthday(){
+  if(!gameDone || !loveDone){
+
+    document.body.insertAdjacentHTML("beforeend", `
+      <div id="noPeekPopup" style="
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.25);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        z-index:9999;
+      ">
+        <div style="
+          position:relative;
+          background:white;
+          padding:25px;
+          border-radius:20px;
+          text-align:center;
+          width:260px;
+        ">
+
+          <!-- BACK BUTTON -->
+          <img src="back.png"
+          onclick="closeNoPeek()"
+          style="
+            position:absolute;
+            top:10px;
+            left:10px;
+            width:45px;
+            cursor:pointer;
+          ">
+
+          <!-- GIF -->
+          <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2ZwZmtjMXcwbWlxZTRncjQ3MGkzeXFjamoxYmE2bnQ2M2dvcWhhZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/1v7uBGZzfoYDoyvDaH/giphy.gif"
+          style="width:120px;margin-bottom:10px;">
+
+          <h3>no peeking!!!</h3>
+          <p>finish the other two options first ♡</p>
+
+        </div>
+      </div>
+    `);
+
+    return;
+  }
+
+  document.getElementById("content").innerHTML=`
+    <div class="letter">
+      <img src="birthday2.png" class="bday-img">
+      <img class="back-img" src="back.png" onclick="showOptions()">
+      <img id="kissGif" src="kiss1.png" style="position:absolute;top:-70px;right:-70px;width:200px;">
+      <h1>Happy Birthday ♡</h1>
+      <p id="text" class="bday-text"></p>
+    </div>
+  `;
+
+  confetti({colors:["#ffc0cb","#ffffff"]});
+
+  let text = `Happy 22nd Birthday old bald man ♡
+
+I genuinely don’t even know where to start, because you mean way too much to me (like it's actually unfair). You’re one of those people that somehow make everything feel lighter by just talking to… which is lowkey(HIGH-key) annoying but also my favorite thing ever.
+
+Being BESTfriends (mn 8eer no2ta) l7d rn (mn 8eer no2ta bardo) with you is honestly one of the best things that has ever happened to me.
+
+You make me feel safe, happy, and loved. Every little moment with you means so much to me, even the dumb ones, especially the dumb ones.
+
+I’m really, really grateful to have you in my life. You’ve been there for me in ways that actually matter.
+
+I hope this year brings you everything you want and more.
+
+And just so you know, I’ll always be right here.
+
+I love you so much. Enjoy your special day ml ♡`;
+  let i=0;
+  function type(){
+    if(i<text.length){
+      document.getElementById("text").textContent+=text[i];
+      i++;
+      setTimeout(type,20);
+    }
+  }
+  type();
+
+  let j=0;
+  setInterval(()=>{
+    let el=document.getElementById("kissGif");
+    if(!el) return;
+    j=(j+1)%2;
+    el.src=["kiss1.png","kiss2.png"][j];
+  },800);
+}
+</script>
+
+</body>
+</html>
