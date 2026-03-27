@@ -191,6 +191,18 @@ button {
   white-space: pre-line;
   text-align: left;
 }
+body {
+  cursor: url('cursor.png'), auto;
+}
+/* normal cursor */
+body {
+  cursor: url("./cursor1.png") 16 16, auto;
+}
+
+/* hover */
+button, .choices img, .back-img, .card, .love-box {
+  cursor: url("./cursor2.png") 16 16, pointer;
+}
 </style>
 
 </head>
@@ -533,6 +545,49 @@ I love you so much. Enjoy your special day ml ♡`;
     el.src=["kiss1.png","kiss2.png"][j];
   },800);
 }
+const trailCanvas = document.createElement("canvas");
+trailCanvas.style.position = "fixed";
+trailCanvas.style.top = 0;
+trailCanvas.style.left = 0;
+trailCanvas.style.pointerEvents = "none";
+trailCanvas.style.zIndex = 9999;
+document.body.appendChild(trailCanvas);
+
+const ctx = trailCanvas.getContext("2d");
+
+trailCanvas.width = window.innerWidth;
+trailCanvas.height = window.innerHeight;
+
+let particles = [];
+
+document.addEventListener("mousemove", (e) => {
+  particles.push({
+    x: e.clientX,
+    y: e.clientY,
+    size: Math.random() * 6 + 2,
+    alpha: 1
+  });
+});
+
+function animateTrail() {
+  ctx.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+
+  particles.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 182, 193, ${p.alpha})`;
+    ctx.fill();
+
+    p.alpha -= 0.02;
+    p.size *= 0.95;
+
+    if (p.alpha <= 0) particles.splice(i, 1);
+  });
+
+  requestAnimationFrame(animateTrail);
+}
+
+animateTrail();
 </script>
 
 </body>
